@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palindrome Checker</title>
+    <!-- Add some creative elements -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: rgba(231, 163, 118, 0.6); /* Light peach background color */
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            background-color: #fff; /* White background for the container */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .back-button {
+            background-color: #f44336;
+        }
+
+        .back-button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Palindrome Checker</h1>
+        <p>Enter a word or phrase to check if it's a palindrome:</p>
+        <input type="text" id="userInput">
+        <button onclick="checkPalindrome()">Check</button>
+        <p id="result"></p>
+        <a href="index.html" class="button back-button">Back to Home</a>
+    </div>
+
+    <!-- JavaScript for palindrome checking -->
+    <script>
+        // Function to check if a string is a palindrome
+        function isPalindrome(str) {
+            // Remove non-alphanumeric characters and convert to lowercase
+            str = str.replace(/[^A-Za-z0-9]/g, '').toLowerCase();
+            // Compare the string with its reverse
+            return str === str.split('').reverse().join('');
+        }
+
+        // Function to handle button click
+        function checkPalindrome() {
+            // Get user input
+            var userInput = document.getElementById("userInput").value;
+
+            // Check if it's a palindrome
+            if (isPalindrome(userInput)) {
+                document.getElementById("result").innerHTML = "<strong>Yes!</strong> '" + userInput + "' is a palindrome.";
+            } else {
+                document.getElementById("result").innerHTML = "<strong>No!</strong> '" + userInput + "' is not a palindrome.";
+                playWrongBuzzer(); // Play sound if it's not a palindrome
+            }
+        }
+
+        // Function to play "Wrong Buzzer - Sound Effect"
+        function playWrongBuzzer() {
+            // This path should be relative to the HTML file, assuming the audio file is in the same folder as the HTML
+            var audio = new Audio('wrong_buzzer.mp4');
+            audio.volume = 1; // Set volume to 100%
+            audio.play();
+        }
+    </script>
+</body>
+
+</html>

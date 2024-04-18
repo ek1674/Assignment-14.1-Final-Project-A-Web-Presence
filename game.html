@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Snake Game</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            background: black;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        #background {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border: 1px solid white;
+            background-size: cover;
+        }
+
+        canvas {
+            position: absolute;
+            border: none;
+        }
+
+        #scoreContainer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            justify-content: space-between;
+            width: 400px;
+            z-index: 1;
+        }
+
+        #score,
+        #highScore {
+            font-size: 20px;
+        }
+
+        #buttonContainer {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+        }
+
+        #startButton,
+        #restartButton,
+        #homeButton {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #startButton:hover,
+        #restartButton:hover,
+        #homeButton:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="background"></div>
+    <div id="scoreContainer">
+        <div id="score">Score: 0</div>
+        <div id="highScore">High Score: 0</div>
+    </div>
+    <canvas width="400" height="400" id="game"></canvas>
+    <div id="buttonContainer">
+        <button id="startButton">Start Game</button>
+        <button id="restartButton" style="display: none;">Restart Game</button>
+        <a href="./index.html" id="homeButton">Back to Home</a>
+    </div>
+    <script>
+        var canvas = document.getElementById('game');
+        var context = canvas.getContext('2d');
+
+        var grid = 16;
+        var score = 0;
+        var highScore = 0;
+        var gameRunning = false;
+        var gameInterval;
+
+        var snake = {
+            x: 160,
+            y: 160,
+            dx: grid,
+            dy: 0,
+            cells: [],
+            maxCells: 4,
+            speed: 100
+        };
+        var apple = {
+            x: 320,
+            y: 320
+        };
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+
+        function loop() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            snake.x += snake.dx;
+            snake.y += snake.dy;
+
+            if (snake.x < 0 || snake.x >= canvas.width || snake.y < 0 || snake.y >= canvas.height) {
+                gameOver();
+                return;
+            }
+
+            snake.cells.unshift({
+                x: snake.x,
+                y: snake.y
+            });
+
+            if (snake.cells.length > snake.maxCells) {
+                snake.cells.pop();
+            }
+
+            context.fillStyle = 'red';
+            context.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+
+            context.fillStyle = 'green';
+            snake.cells.forEach(function (cell, index) {
+                context.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+
+                if (cell.x === apple.x && cell.y === apple.y) {
+                    snake.maxCells++;
+                    score++;
+                    if (score > highScore) {
+                        highScore = score;
+                    }
+
+                    apple.x = getRandomInt(0, 25) * grid;
+                    apple.y = getRandomInt(0, 25) * grid;
+
+                    snake.speed *= 0.95;
+                }
+
+                for (var i = index + 1; i < snake.cells.length; i++) {
+                    if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+                        gameOver();
+                        return;
+                    }
+                }
+            });
+
+            document.getElementById('score').textContent = 'Score: ' + score;
+            document.getElementById('highScore').textContent = 'High Score: ' + highScore;
+
+            if (checkWinCondition()) {
+                winGame();
+                return;
+            }
+        }
+
+        function startGame() {
+            gameRunning = true;
+            document.getElementById('startButton').style.display = 'none';
+            document.getElementById('restartButton').style.display = 'none';
+            score = 0;
+            snake.x = 160;
+            snake.y = 160;
+            snake.cells = [];
+            snake.maxCells = 4;
+            snake.dx = grid;
+            snake.dy = 0;
+            snake.speed = 100;
+
+            apple.x = getRandomInt(0, 25) * grid;
+            apple.y = getRandomInt(0, 25) * grid;
+
+            clearInterval(gameInterval);
+            gameInterval = setInterval(loop, snake.speed);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            context.fillStyle = 'white';
+            context.font = '30px Arial';
+            context.fillText('Game Over', canvas.width / 4, canvas.height / 2);
+            document.getElementById('restartButton').style.display = 'block';
+            clearInterval(gameInterval);
+        }
+
+        function restartGame() {
+            document.getElementById('restartButton').style.display = 'none';
+            startGame();
+        }
+
+        function checkWinCondition() {
+            var validPositions = 0;
+            for (var i = 0; i < canvas.width; i += grid) {
+                for (var j = 0; j < canvas.height; j += grid) {
+                    if (!snake.cells.some(cell => cell.x === i && cell.y === j) && !(apple.x === i && apple.y === j)) {
+                        validPositions++;
+                        if (validPositions > 1) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        function winGame() {
+            gameRunning = false;
+            context.fillStyle = 'white';
+            context.font = '30px Arial';
+            context.fillText('You Win!', canvas.width / 4, canvas.height / 2);
+            document.getElementById('restartButton').style.display = 'block';
+            clearInterval(gameInterval);
+        }
+
+        document.getElementById('startButton').addEventListener('click', startGame);
+        document.getElementById('restartButton').addEventListener('click', restartGame);
+
+        document.addEventListener('keydown', function (e) {
+            if (gameRunning) {
+                if (e.which === 37 && snake.dx === 0) {
+                    snake.dx = -grid;
+                    snake.dy = 0;
+                } else if (e.which === 38 && snake.dy === 0) {
+                    snake.dy = -grid;
+                    snake.dx = 0;
+                } else if (e.which === 39 && snake.dx === 0) {
+                    snake.dx = grid;
+                    snake.dy = 0;
+                } else if (e.which === 40 && snake.dy === 0) {
+                    snake.dy = grid;
+                    snake.dx = 0;
+                }
+            }
+        });
+
+    </script>
+</body>
+
+</html>
